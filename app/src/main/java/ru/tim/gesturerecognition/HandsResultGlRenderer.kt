@@ -10,7 +10,6 @@ import java.nio.ByteOrder
 import kotlin.math.cos
 import kotlin.math.sin
 
-
 /** A custom implementation of [ResultGlRenderer] to render [HandsResult].  */
 class HandsResultGlRenderer : ResultGlRenderer<HandsResult?> {
     private var program = 0
