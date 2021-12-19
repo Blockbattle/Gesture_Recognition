@@ -1,13 +1,15 @@
 package ru.tim.gesturerecognition
 
-import android.content.res.AssetManager
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.View
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -19,22 +21,18 @@ import com.google.mediapipe.solutions.hands.HandLandmark
 import com.google.mediapipe.solutions.hands.Hands
 import com.google.mediapipe.solutions.hands.HandsOptions
 import com.google.mediapipe.solutions.hands.HandsResult
-import org.tensorflow.lite.Interpreter
-import java.io.FileInputStream
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
-import java.nio.channels.FileChannel
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.util.*
+import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.math.max
-
 
 /** Main activity of MediaPipe Hands app.  */
 class MainActivity : AppCompatActivity() {
-    private var k: Int = 0;
-
-    private lateinit var tflite : Interpreter
-    private lateinit var tflitemodel : ByteBuffer
-
+    private var k = 0
+    //private val resultQueue: Queue<List<LandmarkProto.NormalizedLandmark>> = ConcurrentLinkedQueue()
     private var hands: Hands? = null
 
     private enum class InputSource {
@@ -52,23 +50,43 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        try{
-            tflitemodel = loadModelFile(this.assets, "model.tflite")
-            tflite = Interpreter(tflitemodel)
-        } catch (ex: Exception){
-            ex.printStackTrace()
-        }
+        //predictText()
+        //Log.i("res", khttp.get("http://server-gesturecognition-dev.apps.sandbox-m2.ll9k.p1.openshiftapps.com/").text)
 
         setupLiveDemoUiComponents()
     }
 
-    private fun loadModelFile(assetManager: AssetManager, modelPath: String): ByteBuffer {
-        val fileDescriptor = assetManager.openFd(modelPath)
-        val inputStream = FileInputStream(fileDescriptor.fileDescriptor)
-        val fileChannel = inputStream.channel
-        val startOffset = fileDescriptor.startOffset
-        val declaredLength = fileDescriptor.declaredLength
-        return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength)
+   /* @DelicateCoroutinesApi
+    private fun predictText() {
+        GlobalScope.launch() {
+            while (true) {
+                while (!resultQueue.isEmpty()) {
+                    GlobalScope.launch() {
+                        Log.i("res", fetchWebsiteContents(resultQueue.poll()!!))
+                    }
+                }
+                delay(50)
+            }
+
+            //Log.i("res", fetchWebsiteContents(resultQueue.poll()!!))
+            /*while (true) {
+                if (resultQueue.isEmpty())
+                    delay(50)
+                else
+                    Log.i("res", fetchWebsiteContents(resultQueue.poll()!!))
+            }*/
+        }
+    }*/
+
+    private fun fetchWebsiteContents(landmarks: List<LandmarkProto.NormalizedLandmark>):String {
+        var url = "http://server-gesturecognition-dev.apps.sandbox-m2.ll9k.p1.openshiftapps.com/letter?"
+        for (i in landmarks.indices) {
+            url += if (i == 0)
+                "x=${landmarks[i].x}&y=${landmarks[i].y}"
+            else
+                "&x=${landmarks[i].x}&y=${landmarks[i].y}"
+        }
+        return khttp.get(url).text
     }
 
     override fun onResume() {
@@ -174,56 +192,33 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        var resBitmap: Bitmap? = null
-        resBitmap = drawSkeleton(result)
-
-        //val stream = ByteArrayOutputStream()
-        //resBitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream)
-        //val byteArray: ByteArray = stream.toByteArray()
-        val input: ByteBuffer = getScaledMatrix(resBitmap, intArrayOf(224, 224, 3))
-
-        try {
-            // Data format conversion takes too long
-            // Log.d("inputData", Arrays.toString(inputData));
-            val labelProbArray = Array(1) { FloatArray(28) }
-            val start = System.currentTimeMillis()
-            // get predict result
-            tflite.run(input, labelProbArray)
-            val end = System.currentTimeMillis()
-            val time = end - start
-            val results = FloatArray(labelProbArray[0].size)
-            System.arraycopy(labelProbArray[0], 0, results, 0, labelProbArray[0].size)
-            // show predict result and time
-            val r: Int = getMaxResult(results)
-            //name：${resultLabel.get(r)}
-            val showText = """
-                 result：$r
-                 probability：${results[r]}
-                 time：${time}ms
-                 """.trimIndent()
-            Log.i("AAAAAAA", showText)
-        } catch (e: java.lang.Exception) {
-            e.printStackTrace()
-        }
-
-        //drawSkeleton(result)
-            //val imageView: ImageView = findViewById(R.id.imageView);
-            //stopCurrentPipeline()
-        /*var resBitmap: Bitmap? = null
-        if(++k % 14 == 0) {
-            resBitmap = drawSkeleton(result)
-        }
+        //это сделал не я
         Handler(Looper.getMainLooper()).post {
-            if(k % 14 == 0) {
-                val imageView: ImageView = findViewById(R.id.imageView)
-                val bitmap: Bitmap = resBitmap!!
-                //bitmap.eraseColor(Color.BLUE)
-                imageView.setImageBitmap(bitmap)
+            k = (k + 1) % 2
+            if (k == 0) {
+                GlobalScope.launch() {
+                    //Log.i("res", fetchWebsiteContents(result.multiHandLandmarks()[0].landmarkList))
+                    val s = fetchWebsiteContents(result.multiHandLandmarks()[0].landmarkList)
+                    val subs = s.split(" ")
+                    var confidence: Float = 0f
+                    var res: Int = -1
+                    for ((i, sub) in subs.withIndex()) {
+                        if (sub.toFloat() > confidence) {
+                            confidence = sub.toFloat()
+                            res = i
+                        }
+                    }
+                    Handler(Looper.getMainLooper()).post {
+                        val textView: TextView = findViewById(R.id.textView)
+                        textView.text = LETTERS[res]
+                    }
+                }
             }
-        }*/
-            //bitmap = Bitmap.createBitmap(200, 200, Bitmap.Config.ARGB_8888)
-            //bitmap!!.eraseColor(Color.BLUE)
-            //imageView.setImageBitmap(bitmap)
+            //resultQueue.add(result.multiHandLandmarks()[0].landmarkList)
+        }
+
+        //resultQueue.add(result.multiHandLandmarks()[0].landmarkList)
+        //Log.i("res", fetchWebsiteContents(result.multiHandLandmarks()[0].landmarkList))
 
         val wristLandmark = result.multiHandLandmarks()[0].landmarkList[HandLandmark.WRIST]
         // For Bitmaps, show the pixel values. For texture inputs, show the normalized coordinates.
@@ -324,44 +319,9 @@ class MainActivity : AppCompatActivity() {
         return resBitmap
     }
 
-    // TensorFlow model，get predict data
-    private fun getScaledMatrix(bitmap: Bitmap, ddims: IntArray): ByteBuffer {
-        val imgData = ByteBuffer.allocateDirect(ddims[0] * ddims[1] * ddims[2] * 4)
-        imgData.order(ByteOrder.nativeOrder())
-        // get image pixel
-        val pixels = IntArray(ddims[0] * ddims[1])
-        val bm = Bitmap.createScaledBitmap(bitmap, ddims[0], ddims[1], false)
-        bm.getPixels(pixels, 0, bm.width, 0, 0, ddims[0], ddims[1])
-        var pixel = 0
-        for (i in 0 until ddims[0]) {
-            for (j in 0 until ddims[1]) {
-                val `val` = pixels[pixel++]
-                imgData.putFloat(((`val` shr 16 and 0xFF) - 128f) / 128f)
-                imgData.putFloat(((`val` shr 8 and 0xFF) - 128f) / 128f)
-                imgData.putFloat(((`val` and 0xFF) - 128f) / 128f)
-            }
-        }
-        if (bm.isRecycled) {
-            bm.recycle()
-        }
-        return imgData
-    }
-
-    // get max probability label
-    private fun getMaxResult(result: FloatArray): Int {
-        var probability = result[0]
-        var r = 0
-        for (i in result.indices) {
-            if (probability < result[i]) {
-                probability = result[i]
-                r = i
-            }
-        }
-        return r
-    }
-
     companion object {
         private const val TAG = "MainActivity"
+        private val LETTERS = "A B C D E F G H I J K L M N O P Q R S T U V W X Y Z nothing space".split(" ")
 
         // Run the pipeline and the model inference on GPU or CPU.
         private const val RUN_ON_GPU = true

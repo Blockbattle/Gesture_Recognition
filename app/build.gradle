@@ -48,4 +48,7 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
     implementation 'com.google.mediapipe:solution-core:latest.release'
     implementation 'com.google.mediapipe:hands:latest.release'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.0'
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0"
+    implementation "io.karn:khttp-android:0.1.2"
 }
