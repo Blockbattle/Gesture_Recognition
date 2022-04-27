@@ -45,7 +45,7 @@ import ru.tim.gesturerecognition.WordGenerator.Companion.wordProcessing
 
     private var cameraInput: CameraInput? = null
     private var glSurfaceView: SolutionGlSurfaceView<HandsResult>? = null
-    private var cameraFacing = CameraInput.CameraFacing.BACK
+    private var cameraFacing = CameraInput.CameraFacing.FRONT
 
      /**
       * Создаёт активность обрабатывает нажатия кнопок.
