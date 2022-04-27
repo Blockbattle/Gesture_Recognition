@@ -10,7 +10,7 @@ import java.nio.ByteOrder
 import kotlin.math.cos
 import kotlin.math.sin
 
-/** A custom implementation of [ResultGlRenderer] to render [HandsResult].  */
+/** Класс с имплементацией [ResultGlRenderer] для прорисовки скелета руки [HandsResult].  */
 class HandsResultGlRenderer : ResultGlRenderer<HandsResult?> {
     private var program = 0
     private var positionHandle = 0
@@ -35,6 +35,11 @@ class HandsResultGlRenderer : ResultGlRenderer<HandsResult?> {
         colorHandle = GLES20.glGetUniformLocation(program, "uColor")
     }
 
+    /**
+     * Рисует на кадрах скелет руки
+     * @param result результат распознавания руки (координаты скелета)
+     * @param projectionMatrix
+     */
     override fun renderResult(result: HandsResult?, projectionMatrix: FloatArray?) {
         if (result == null) {
             return
@@ -47,35 +52,35 @@ class HandsResultGlRenderer : ResultGlRenderer<HandsResult?> {
             val isLeftHand: Boolean = result.multiHandedness()[i].label.equals("Left")
             drawConnections(
                 result.multiHandLandmarks()[i].landmarkList,
-                if (isLeftHand) LEFT_HAND_CONNECTION_COLOR else RIGHT_HAND_CONNECTION_COLOR
+                HAND_CONNECTION_COLOR
             )
+
             for (landmark in result.multiHandLandmarks()[i].landmarkList) {
-                // Draws the landmark.
+                // Рисуем точку
                 drawCircle(
                     landmark.x,
                     landmark.y,
-                    if (isLeftHand) LEFT_HAND_LANDMARK_COLOR else RIGHT_HAND_LANDMARK_COLOR
+                    HAND_LANDMARK_COLOR
                 )
-                // Draws a hollow circle around the landmark.
+                // Рисуем круг вокруг точки
                 drawHollowCircle(
                     landmark.x,
                     landmark.y,
-                    if (isLeftHand) LEFT_HAND_HOLLOW_CIRCLE_COLOR else RIGHT_HAND_HOLLOW_CIRCLE_COLOR
+                    HAND_HOLLOW_CIRCLE_COLOR
                 )
             }
         }
     }
 
-    /**
-     * Deletes the shader program.
-     *
-     *
-     * This is only necessary if one wants to release the program while keeping the context around.
-     */
     fun release() {
         GLES20.glDeleteProgram(program)
     }
 
+    /**
+     * Рисует соединения между точками скелета руки.
+     * @param handLandmarkList список координат основных точек руки
+     * @param colorArray цвет рисуемых соединений
+     */
     private fun drawConnections(
         handLandmarkList: List<NormalizedLandmark>,
         colorArray: FloatArray
@@ -96,6 +101,12 @@ class HandsResultGlRenderer : ResultGlRenderer<HandsResult?> {
         }
     }
 
+    /**
+     * Рисует основные точки скелета кисти.
+     * @param x координата точки по оси x
+     * @param y координата точки по оси y
+     * @param colorArray цвет рисуемых точек
+     */
     private fun drawCircle(x: Float, y: Float, colorArray: FloatArray) {
         GLES20.glUniform4fv(colorHandle, 1, colorArray, 0)
         val vertexCount = NUM_SEGMENTS + 2
@@ -121,6 +132,12 @@ class HandsResultGlRenderer : ResultGlRenderer<HandsResult?> {
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, vertexCount)
     }
 
+    /**
+     * Рисует линию вокруг основных точек скелета кисти.
+     * @param x координата точки по оси x
+     * @param y координата точки по оси y
+     * @param colorArray цвет рисуемых линий
+     */
     private fun drawHollowCircle(x: Float, y: Float, colorArray: FloatArray) {
         GLES20.glUniform4fv(colorHandle, 1, colorArray, 0)
         val vertexCount = NUM_SEGMENTS + 1
@@ -146,14 +163,11 @@ class HandsResultGlRenderer : ResultGlRenderer<HandsResult?> {
 
     companion object {
         private const val TAG = "HandsResultGlRenderer"
-        private val LEFT_HAND_CONNECTION_COLOR = floatArrayOf(0.2f, 1f, 0.2f, 1f)
-        private val RIGHT_HAND_CONNECTION_COLOR = floatArrayOf(1f, 0.2f, 0.2f, 1f)
+        private val HAND_CONNECTION_COLOR = floatArrayOf(0.2f, 1f, 0.2f, 1f)
         private const val CONNECTION_THICKNESS = 25.0f
-        private val LEFT_HAND_HOLLOW_CIRCLE_COLOR = floatArrayOf(0.2f, 1f, 0.2f, 1f)
-        private val RIGHT_HAND_HOLLOW_CIRCLE_COLOR = floatArrayOf(1f, 0.2f, 0.2f, 1f)
+        private val HAND_HOLLOW_CIRCLE_COLOR = floatArrayOf(0.2f, 1f, 0.2f, 1f)
         private const val HOLLOW_CIRCLE_RADIUS = 0.01f
-        private val LEFT_HAND_LANDMARK_COLOR = floatArrayOf(1f, 0.2f, 0.2f, 1f)
-        private val RIGHT_HAND_LANDMARK_COLOR = floatArrayOf(0.2f, 1f, 0.2f, 1f)
+        private val HAND_LANDMARK_COLOR = floatArrayOf(1f, 0.2f, 0.2f, 1f)
         private const val LANDMARK_RADIUS = 0.008f
         private const val NUM_SEGMENTS = 120
         private const val VERTEX_SHADER = ("uniform mat4 uProjectionMatrix;\n"
