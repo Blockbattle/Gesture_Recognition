@@ -79,6 +79,11 @@ class Microphone : AppCompatActivity() {
         textView.text = text
     }
 
+    override fun onBackPressed() {
+        super.onBackPressed()
+        text = ""
+    }
+
     /**
      * Создаёт и запускает окно распознавания речи.
      * Задаёт параметры: язык, подсказка и др.
@@ -90,8 +95,8 @@ class Microphone : AppCompatActivity() {
                 RecognizerIntent.EXTRA_LANGUAGE_MODEL,
                 RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
             )
-            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en")
-            intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Please speak")
+            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, "ru")
+            intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Пожалуйста, говорите")
 
             startActivityForResult(intent, 1001)
         } catch(e: ActivityNotFoundException)
@@ -100,6 +105,7 @@ class Microphone : AppCompatActivity() {
             startActivity(browserIntent)
         }
     }
+
 
     /**
      * Добавляет результат распознавания речи в текстовое поле.

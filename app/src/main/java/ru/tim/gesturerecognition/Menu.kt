@@ -30,5 +30,11 @@ class Menu : AppCompatActivity() {
             val intent = Intent(this, Microphone::class.java)
             startActivity(intent)
         }
+
+        val settingsButton = findViewById<FloatingActionButton>(R.id.settingsButton)
+        settingsButton.setOnClickListener {
+            val intent = Intent(this, Settings::class.java)
+            startActivity(intent)
+        }
     }
 }

@@ -25,12 +25,14 @@ import ru.tim.gesturerecognition.WordGenerator.Companion.letters
 import ru.tim.gesturerecognition.WordGenerator.Companion.text
 import ru.tim.gesturerecognition.WordGenerator.Companion.wordGeneration
 import ru.tim.gesturerecognition.WordGenerator.Companion.wordProcessing
+import ru.tim.gesturerecognition.WordGenerator.Companion.wrists
 
- /**
+/**
   * Активность для работы с камерой.
   */
  class Camera : AppCompatActivity() {
     private var k = 0
+    private var noSkeletonsCount = 0;
     private var hands: Hands? = null
 
     private enum class InputSource {
@@ -112,6 +114,11 @@ import ru.tim.gesturerecognition.WordGenerator.Companion.wordProcessing
             glSurfaceView!!.visibility = View.GONE
             cameraInput!!.close()
         }
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        text = ""
     }
 
     /**
@@ -206,6 +213,35 @@ import ru.tim.gesturerecognition.WordGenerator.Companion.wordProcessing
       * @param result результат распознавания руки (координаты скелета)
       */
     private fun recognizeGesture(result: HandsResult) {
+        if (result.multiHandLandmarks().isEmpty()) {
+            if (++noSkeletonsCount == 14) {
+                noSkeletonsCount = 0
+                if (Settings.isCheckText) {
+                    Handler(Looper.getMainLooper()).post {
+                        GlobalScope.launch() {
+                            text = wordProcessing()
+
+                            Handler(Looper.getMainLooper()).post {
+                                val textView: TextView = findViewById(R.id.textView)
+                                textView.text = text
+                            }
+                        }
+                    }
+                }
+                if (Settings.isSpace) {
+                    Handler(Looper.getMainLooper()).post {
+                        GlobalScope.launch() {
+                            Handler(Looper.getMainLooper()).post {
+                                val textView: TextView = findViewById(R.id.textView)
+                                if (text.isNotEmpty() && text.last() != ' ')
+                                    text = "$text "
+                                textView.text = text
+                            }
+                        }
+                    }
+                }
+            }
+        }
         if (result.multiHandLandmarks().isEmpty() || mode == Mode.MIC || mode == Mode.NONE_M || mode == Mode.NONE_C) {
             return
         }
@@ -217,12 +253,15 @@ import ru.tim.gesturerecognition.WordGenerator.Companion.wordProcessing
             k = (k + 1) % 2
             if (k == 0) {
                 GlobalScope.launch() {
-                    val res = getLetter(result.multiHandLandmarks()[0].landmarkList)
+                    val res = getLetter(result.multiHandLandmarks()[0].landmarkList, result.multiHandedness()[0].label)
+                    Log.i("letter", "$res")
                     if (res != -1) {
                         Handler(Looper.getMainLooper()).post {
                             val textView: TextView = findViewById(R.id.textView)
-                            if (LETTERS[res] != "nothing")
+                            if (LETTERS[res] != "nothing") {
                                 letters.add(LETTERS[res])
+                                wrists.add(result.multiHandLandmarks()[0].landmarkList[0])
+                            }
                             wordGeneration()
 
                             textView.text = text
@@ -238,6 +277,7 @@ import ru.tim.gesturerecognition.WordGenerator.Companion.wordProcessing
       * @param result результат распознавания руки (координаты скелета)
       */
     private fun logWristLandmark(result: HandsResult) {
+        Log.i("Label", result.multiHandedness()[0].label)
         val wristLandmark = result.multiHandLandmarks()[0].landmarkList[HandLandmark.WRIST]
         Log.i(
                 TAG, String.format(
@@ -260,9 +300,10 @@ import ru.tim.gesturerecognition.WordGenerator.Companion.wordProcessing
         var mode = Mode.CAMERA
 
         private const val TAG = "MainActivity"
-        private val LETTERS = "a/b/c/d/e/f/g/h/i/j/k/l/m/n/o/p/q/r/s/t/u/v/w/x/y/z/nothing/ ".split("/")
+        //private val LETTERS = "a/b/c/d/e/f/g/h/i/j/k/l/m/n/o/p/q/r/s/t/u/v/w/x/y/z/nothing/ ".split("/")
+        private val LETTERS = "а/б/в/г/д/е/ё/ж/з/и/к/л/м/н/о/п/р/с/т/у/ф/х/ц/ч/ш/ь/ы/э/ю/я/ /ё/й".split("/")
 
         // Запуск с использованием графического процессора.
-        private const val RUN_ON_GPU = false
+        private const val RUN_ON_GPU = true
     }
 }

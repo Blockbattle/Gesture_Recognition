@@ -11,9 +11,9 @@
     <application
         android:usesCleartextTraffic="true"
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/ic_gr"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:roundIcon="@mipmap/ic_gr_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.GestureRecognition">
         <activity android:name=".Menu">
@@ -26,6 +26,7 @@
         <activity android:name=".Camera"/>
         <activity android:name=".Microphone"/>
         <activity android:name=".TextEdit"/>
+        <activity android:name=".Settings"/>
     </application>
 
 </manifest>

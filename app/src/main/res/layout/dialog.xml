@@ -17,7 +17,7 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="24dp"
         android:layout_marginBottom="24dp"
-        android:text="OK"
+        android:text="ОК"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
@@ -44,7 +44,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="sans-serif-condensed-light"
-                android:text="How can I help you"
+                android:text="Как я могу помочь вам?"
                 android:textAlignment="center"
                 android:textColor="#ECECEC"
                 android:textSize="30sp" />
@@ -57,7 +57,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:fontFamily="sans-serif-condensed-medium"
-        android:text="I want to tell you..."
+        android:text="Сообщение"
         android:textColor="#ECECEC"
         android:textSize="30sp"
         app:layout_constraintEnd_toEndOf="parent"
