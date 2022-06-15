@@ -24,7 +24,8 @@ class WordGenerator {
          * @return текст с исправленными ошибками.
          */
         fun wordProcessing(): String {
-            val url = "https://speller.yandex.net/services/spellservice.json/checkText?lang=ru&text=$text"
+            val url =
+                "https://speller.yandex.net/services/spellservice.json/checkText?lang=ru&text=$text"
             val response = khttp.get(url)
             if (response.statusCode != 200)
                 return text
@@ -62,7 +63,9 @@ class WordGenerator {
                 if (letters[letters.size - 1] == letters[letters.size - 2]) {
                     if (letters.size >= 3) {
                         //преобразуем букву ш в щ если есть движение
-                        if (letters[0][0] == 'ш' && wrists[wrists.size - 1].y - wrists[0].y > 0.15) {
+                        if (letters[0][0] == 'ш' &&
+                            wrists[wrists.size - 1].y - wrists[0].y > 0.15
+                        ) {
                             if (text.isNotEmpty() && text.last() == 'ш') {
                                 text = text.removeSuffix("ш")
                             }
@@ -71,10 +74,14 @@ class WordGenerator {
 
                         if (text.isNotEmpty() && text.last() != letters[0][0] || text.isEmpty())
                             //удаляем невозможные сочетания, которые могут возникать
-                            if (!(text.isNotEmpty() && (text.last() == 'ё' && letters[0][0] == 'е'
-                                        || text.last() == 'й' && letters[0][0] == 'и'
-                                        || text.last() == 'щ' && letters[0][0] == 'ш')))
+                            if (!(text.isNotEmpty() &&
+                                        (text.last() == 'ё' && letters[0][0] == 'е' ||
+                                                text.last() == 'й' && letters[0][0] == 'и' ||
+                                                text.last() == 'щ' && letters[0][0] == 'ш')
+                                        )
+                            ) {
                                 text += letters[0]
+                            }
                         if (letters[0][0] != 'ш') {
                             letters.clear()
                             wrists.clear()
@@ -89,17 +96,6 @@ class WordGenerator {
                     wrists.add(lastW)
                 }
             }
-            /*if (letters.size == 2) {
-                if (letters[0] == letters[1]) {
-                    if (text.isNotEmpty() && text.last() != letters[0][0] || text.isEmpty())
-                        text += letters[0]
-                    letters.clear()
-                } else {
-                    val last: String = letters.last()
-                    letters.clear()
-                    letters.add(last)
-                }
-            }*/
         }
     }
 }

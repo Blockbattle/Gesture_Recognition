@@ -101,7 +101,11 @@ class Microphone : AppCompatActivity() {
             startActivityForResult(intent, 1001)
         } catch(e: ActivityNotFoundException)
         {
-            val browserIntent = Intent(Intent.ACTION_VIEW,   Uri.parse("https://market.android.com/details?id=com.google.android.googlequicksearchbox"));
+            val browserIntent =
+                Intent(
+                    Intent.ACTION_VIEW,
+                    Uri.parse(getString(R.string.google_speech_recognition))
+                )
             startActivity(browserIntent)
         }
     }
@@ -120,7 +124,8 @@ class Microphone : AppCompatActivity() {
             // Определяем статус возвращаемого результата - успех
             if (resultCode == RESULT_OK) {
                 // Получить результат распознавания голоса
-                val matches: ArrayList<String>? = data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+                val matches: ArrayList<String>? =
+                    data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
                 if (matches != null) {
                     text = text + " " + matches[0]
                     val textView = findViewById<TextView>(R.id.textView)

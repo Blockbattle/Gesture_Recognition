@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Распознавание жестов</string>
+    <string name="google_speech_recognition">https://market.android.com/details?id=com.google.android.googlequicksearchbox</string>
 </resources>

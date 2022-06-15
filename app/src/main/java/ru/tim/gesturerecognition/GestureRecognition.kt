@@ -9,7 +9,8 @@ import com.google.mediapipe.solutions.hands.HandLandmark
 class GestureRecognition {
     companion object {
         private enum class Letters {
-            A, B, V, G, D, E, YO, ZH, Z, I, K, L, M, N, O, P, R, S, T, U, F, H, C, CH, SH, znak, Y, EE, YU, YA, space, JO, J
+            A, B, V, G, D, E, YO, ZH, Z, I, K, L, M, N, O, P,R, S, T,
+            U, F, H, C, CH, SH, znak, Y, EE, YU, YA, space, JO, J
         }
 
         /**
@@ -18,7 +19,7 @@ class GestureRecognition {
          * @param label метка левой или правой руки
          * @return индекс буквы или пробела или -1 в случае неудачного запроса к серверу
          */
-        fun getLetter(landmarks: List<LandmarkProto.NormalizedLandmark>, label: String):Int {
+        fun getLetter(landmarks: List<LandmarkProto.NormalizedLandmark>, label: String): Int {
             val s = getGesturesFromServer(landmarks, label)
             val subs = s.split(" ")
             if (subs.size != 33)// != 28)
@@ -48,8 +49,11 @@ class GestureRecognition {
          * @param label метка левой или правой руки
          * @return строку с вероятностями соответствия букв жесту
          */
-        private fun getGesturesFromServer(landmarks: List<LandmarkProto.NormalizedLandmark>, label: String):String {
-            var url = "https://rus-10000-mden4735-dev.apps.sandbox-m2.ll9k.p1.openshiftapps.com/letter?"
+        private fun getGesturesFromServer(
+            landmarks: List<LandmarkProto.NormalizedLandmark>,
+            label: String
+        ): String {
+            var url = "https://rnn-rus-mden4735-dev.apps.sandbox-m2.ll9k.p1.openshiftapps.com/letter?"
             //var x = ""
             //var y = ""
             for (i in landmarks.indices) {

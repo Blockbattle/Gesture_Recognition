@@ -102,7 +102,9 @@ import ru.tim.gesturerecognition.WordGenerator.Companion.wrists
 
         if (inputSource == InputSource.CAMERA) {
             cameraInput = CameraInput(this)
-            cameraInput!!.setNewFrameListener { textureFrame: TextureFrame? -> hands!!.send(textureFrame) }
+            cameraInput!!.setNewFrameListener {
+                    textureFrame: TextureFrame? -> hands!!.send(textureFrame)
+            }
             glSurfaceView!!.post { startCamera() }
             glSurfaceView!!.visibility = View.VISIBLE
         }
@@ -129,7 +131,9 @@ import ru.tim.gesturerecognition.WordGenerator.Companion.wrists
         val switchButton = findViewById<FloatingActionButton>(R.id.switchCamera)
         switchButton.setOnClickListener {
             cameraFacing =
-                    if (cameraFacing == CameraInput.CameraFacing.FRONT) CameraInput.CameraFacing.BACK
+                    if (cameraFacing == CameraInput.CameraFacing.FRONT) {
+                        CameraInput.CameraFacing.BACK
+                    }
                     else CameraInput.CameraFacing.FRONT
             glSurfaceView!!.post { startCamera() }
         }
@@ -154,13 +158,21 @@ import ru.tim.gesturerecognition.WordGenerator.Companion.wrists
                         .setMaxNumHands(1)
                         .setRunOnGpu(RUN_ON_GPU)
                         .build())
-        hands!!.setErrorListener { message: String, _: RuntimeException? -> Log.e(TAG, "MediaPipe Hands error:$message") }
+        hands!!.setErrorListener { message: String, _: RuntimeException? ->
+            Log.e(TAG, "MediaPipe Hands error:$message")
+        }
         if (inputSource == InputSource.CAMERA) {
             cameraInput = CameraInput(this)
-            cameraInput!!.setNewFrameListener { textureFrame: TextureFrame? -> hands!!.send(textureFrame) }
+            cameraInput!!.setNewFrameListener {textureFrame: TextureFrame? ->
+                hands!!.send(textureFrame)
+            }
         }
 
-        glSurfaceView = SolutionGlSurfaceView(this, hands!!.glContext, hands!!.glMajorVersion)
+        glSurfaceView = SolutionGlSurfaceView(
+            this,
+            hands!!.glContext,
+            hands!!.glMajorVersion
+        )
         glSurfaceView!!.setSolutionResultRenderer(HandsResultGlRenderer())
         glSurfaceView!!.setRenderInputImage(true)
         hands!!.setResultListener { handsResult: HandsResult ->
@@ -242,7 +254,11 @@ import ru.tim.gesturerecognition.WordGenerator.Companion.wrists
                 }
             }
         }
-        if (result.multiHandLandmarks().isEmpty() || mode == Mode.MIC || mode == Mode.NONE_M || mode == Mode.NONE_C) {
+        if (result.multiHandLandmarks().isEmpty() ||
+            mode == Mode.MIC ||
+            mode == Mode.NONE_M ||
+            mode == Mode.NONE_C
+        ) {
             return
         }
 
@@ -253,7 +269,10 @@ import ru.tim.gesturerecognition.WordGenerator.Companion.wrists
             k = (k + 1) % 2
             if (k == 0) {
                 GlobalScope.launch() {
-                    val res = getLetter(result.multiHandLandmarks()[0].landmarkList, result.multiHandedness()[0].label)
+                    val res = getLetter(
+                        result.multiHandLandmarks()[0].landmarkList,
+                        result.multiHandedness()[0].label
+                    )
                     Log.i("letter", "$res")
                     if (res != -1) {
                         Handler(Looper.getMainLooper()).post {
@@ -288,10 +307,12 @@ import ru.tim.gesturerecognition.WordGenerator.Companion.wrists
         if (result.multiHandWorldLandmarks().isEmpty()) {
             return
         }
-        val wristWorldLandmark = result.multiHandWorldLandmarks()[0].landmarkList[HandLandmark.WRIST]
+        val wristWorldLandmark =
+            result.multiHandWorldLandmarks()[0].landmarkList[HandLandmark.WRIST]
         Log.i(
-                TAG, String.format("MediaPipe Hand wrist world coordinates (in meters with the origin at the hand's"
-                + " approximate geometric center): x=%f m, y=%f m, z=%f m",
+                TAG, String.format("MediaPipe Hand wrist world coordinates " +
+                    "(in meters with the origin at the hand's " +
+                    "approximate geometric center): x=%f m, y=%f m, z=%f m",
                 wristWorldLandmark.x, wristWorldLandmark.y, wristWorldLandmark.z)
         )
     }
@@ -300,8 +321,10 @@ import ru.tim.gesturerecognition.WordGenerator.Companion.wrists
         var mode = Mode.CAMERA
 
         private const val TAG = "MainActivity"
-        //private val LETTERS = "a/b/c/d/e/f/g/h/i/j/k/l/m/n/o/p/q/r/s/t/u/v/w/x/y/z/nothing/ ".split("/")
-        private val LETTERS = "а/б/в/г/д/е/ё/ж/з/и/к/л/м/н/о/п/р/с/т/у/ф/х/ц/ч/ш/ь/ы/э/ю/я/ /ё/й".split("/")
+//        private val LETTERS =
+//            "a/b/c/d/e/f/g/h/i/j/k/l/m/n/o/p/q/r/s/t/u/v/w/x/y/z/nothing/ ".split("/")
+        private val LETTERS =
+            "а/б/в/г/д/е/ё/ж/з/и/к/л/м/н/о/п/р/с/т/у/ф/х/ц/ч/ш/ь/ы/э/ю/я/ /ё/й".split("/")
 
         // Запуск с использованием графического процессора.
         private const val RUN_ON_GPU = true
